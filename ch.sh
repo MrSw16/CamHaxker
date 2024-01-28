@@ -91,57 +91,6 @@ if command -v sudo > /dev/null 2>&1; then
 else
     sudo=false
 fi
-#make a function to download the cloudflare 
-# now start the cloudflare
-start_cloud(){
-    # remove the previous log file
-    rm -rf .pk.txt > /dev/null 2>&1 
-	ran=$((RANDOM % 10))
-	php -S 127.0.0.1:800$ran -t .pweb/$1 > /dev/null 2>&1 & sleep 2
-    # now ask the url 
-    echo -e "\e[0;1m Starting clodflare.. "
-    #check fi it is termux or not ..
-    if [[ `command -v termux-chroot` ]];then
-    sleep 3 && termux-chroot ./cloudflare tunnel -url http://127.0.0.1:800$ran --logfile .pk.txt > /dev/null 2>&1 & #throw all the process in background .. 
-    else
-    sleep 3 && ./cloudflare tunnel -url http://127.0.0.1:800$ran --logfile .pk.txt > /dev/null 2>&1 & 
-    fi
-    # now extract the link from the logfile .. 
-    sleep 8
-    clear
-    banner
-    echo -ne "\e[36;1m Link: "
-	link=$(cat .pk.txt | grep "trycloudflare" | cut -d "|" -f2 | cut -d "}" -f2)
-    cat .pk.txt | grep "trycloudflare" | cut -d "|" -f2 | cut -d "}" -f2
-	if [[ ${#link} < 10 ]];then
-		echo -ne "\e[32;1m [!] Some problem occur . please run the script again.."
-	else
-		mask $1 $2 $link
-	fi
-	check_cred $1
-}
-#make a function to download the cloudflared 
-download(){
-    wget --no-check-certificate $1 -O cloudflare
-    chmod +x cloudflare 
-}
-#first check the platform of the machine 
-check_platform(){
-if [[ -e cloudflare ]];then
-    echo -e "\e[36;1m[~] Cloudflared already installed ."
-else
-    echo -e "\e[32;1m Downloding coludflared"
-    host=$(uname -m)
-    if [[($host == "arm") || ($host == "Android")]];then
-    download "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
-    elif [[ $host == "aarch64" ]];then
-    download "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
-    elif [[ $host == "x86_64" ]];then
-    download "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
-    else 
-    download "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-386"
-    fi
-fi
 # Check if mac or termux
 termux=false
 brew=false
